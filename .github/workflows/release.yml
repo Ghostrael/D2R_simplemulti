@@ -1,0 +1,58 @@
+# Builds the Windows release on GitHub's own runner from the tagged source,
+# runs the tests, and attaches the exe with SHA256 and a build provenance attestation.
+# Verify a download with:  gh attestation verify D2RMulti.exe --repo Ghostrael/D2R_simplemulti
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write       # create the release
+  id-token: write       # sign the attestation
+  attestations: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        shell: cmd
+        run: build.cmd
+
+      - name: Test
+        shell: cmd
+        run: tests\test.cmd
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $name = "D2R_SimpleMulti-${{ github.ref_name }}-win-x64"
+          New-Item -ItemType Directory dist/$name | Out-Null
+          Copy-Item D2RMulti.exe, README.md, README.en.md, LICENSE dist/$name
+          Compress-Archive dist/$name/* dist/$name.zip
+          Copy-Item D2RMulti.exe dist/
+          Push-Location dist
+          Get-FileHash D2RMulti.exe, "$name.zip" -Algorithm SHA256 |
+            ForEach-Object { "{0}  {1}" -f $_.Hash.ToLower(), (Split-Path $_.Path -Leaf) } |
+            Set-Content SHA256SUMS.txt -Encoding ascii
+          Pop-Location
+          Get-Content dist/SHA256SUMS.txt
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/D2RMulti.exe
+            dist/*.zip
+
+      - name: Draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $name = "D2R_SimpleMulti-${{ github.ref_name }}-win-x64"
+          gh release create "${{ github.ref_name }}" "dist/$name.zip" dist/D2RMulti.exe dist/SHA256SUMS.txt `
+            --draft --title "D2R SimpleMulti ${{ github.ref_name }}" `
+            --notes "Built by GitHub Actions from ${{ github.sha }}."

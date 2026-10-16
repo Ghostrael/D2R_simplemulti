@@ -2,9 +2,20 @@
 
 [한국어](README.md) · **English**
 
-A multi-client launcher for Diablo II: Resurrected that starts one game window per account. It is meant to be read and built from source yourself (six C# files).
+A multi-client launcher for Diablo II: Resurrected that starts one game window per account. The source is six C# files, small enough to read; use the release exe or build it yourself.
 
 The UI is available in Korean and English. It follows the Windows language at first; change it with the language box at the bottom right, and the launcher restarts in that language (`Lang.cs`; each UI string is paired in place as `L.T("한국어", "English")`).
+
+## Download
+
+Unzip `D2R_SimpleMulti-<version>-win-x64.zip` from [Releases](https://github.com/Ghostrael/D2R_simplemulti/releases) and run `D2RMulti.exe` (Windows 10/11, x64).
+The exe is built by GitHub Actions from the tagged source ([release.yml](.github/workflows/release.yml)) and carries a build provenance attestation. To check that a download was built from this repository:
+
+```
+gh attestation verify D2RMulti.exe --repo Ghostrael/D2R_simplemulti
+```
+
+It is not code-signed, so Windows SmartScreen may warn on first run ("More info" → "Run anyway"). If you would rather not trust someone else's exe, build it yourself as below.
 
 ## Build · Run
 
@@ -46,7 +57,7 @@ the token from a web login is encrypted with DPAPI and written to `WEB_TOKEN` un
 
 | Problem | This launcher |
 |---|---|
-| Executables of unknown origin | No binaries are distributed. Read `Unlocker.cs` (lock release) · `Token.cs` (token hand-off) · `Creds.cs` (token storage) · `Profiles.cs` (graphics profiles · mod list) · `Lang.cs` (language) · `Program.cs` (UI) and build it yourself. No network code (the browser logs in to Blizzard's site directly) |
+| Executables of unknown origin | Release exes are built by GitHub Actions from the public source with a provenance attestation (check with `gh attestation verify`). To build it yourself, read `Unlocker.cs` (lock release) · `Token.cs` (token hand-off) · `Creds.cs` (token storage) · `Profiles.cs` (graphics profiles · mod list) · `Lang.cs` (language) · `Program.cs` (UI) and build it yourself. No network code (the browser logs in to Blizzard's site directly) |
 | Administrator rights (handle.exe · Process Explorer) | Not needed. A D2R process started by the same user can be opened with `PROCESS_QUERY_INFORMATION \| PROCESS_DUP_HANDLE`. Tested from a non-elevated shell |
 | Account data stored in plain text | The launcher **never takes a password**. Tokens are kept only in **Windows Credential Manager** (`D2RMulti:<email>`, DPAPI-encrypted), and are DPAPI-encrypted when written to the registry too. The command line is just `-uid osi`. `%APPDATA%\D2RMulti\settings.txt` holds only language · name · email · region · mod · graphics profile · game path |
 | Account bans | It does not read or write game memory, injects no DLLs, and automates no input. All it does is close one lock event handle (name ending in `Check For Other Instances` — measured as `DiabloII Check For Other Instances` in 2026-10, formerly `DiaBlo_II …`) and launch with the token in the same place the Battle.net launcher uses |

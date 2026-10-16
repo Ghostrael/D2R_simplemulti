@@ -2,9 +2,20 @@
 
 **한국어** · [English](README.en.md)
 
-디아블로 2 레저렉션을 계정별로 여러 개 띄우는 다클라 런처. 소스 여섯 파일을 직접 읽고 직접 빌드하는 것이 전제다.
+디아블로 2 레저렉션을 계정별로 여러 개 띄우는 다클라 런처. 소스는 C# 여섯 파일로 직접 읽을 수 있는 크기이고, 릴리즈 exe 를 받거나 직접 빌드해 쓴다.
 
 화면 언어는 한국어 · English. 처음에는 Windows 언어를 따르고, 런처 오른쪽 아래의 언어 선택에서 바꾸면 런처가 다시 시작되며 적용된다 (`Lang.cs`, 문구는 쓰는 자리에서 `L.T("한국어", "English")` 로 짝지어 있다).
+
+## 받기
+
+[Releases](https://github.com/Ghostrael/D2R_simplemulti/releases) 의 `D2R_SimpleMulti-<버전>-win-x64.zip` 을 풀어 `D2RMulti.exe` 를 실행한다 (Windows 10/11, x64).
+이 exe 는 GitHub Actions 가 태그의 소스로 빌드한 것이고 ([release.yml](.github/workflows/release.yml)), 출처 증명이 붙어 있다. 받은 파일이 이 저장소에서 빌드된 것인지 확인하려면:
+
+```
+gh attestation verify D2RMulti.exe --repo Ghostrael/D2R_simplemulti
+```
+
+코드 서명은 하지 않았으므로 처음 실행할 때 Windows SmartScreen 경고가 뜰 수 있다 ("추가 정보" → "실행"). 남이 만든 exe 를 믿고 싶지 않으면 아래처럼 직접 빌드한다.
 
 ## 빌드 · 실행
 
@@ -46,7 +57,7 @@
 
 | 문제 | 이 런처 |
 |---|---|
-| 출처 불명 exe | 바이너리를 배포하지 않는다. `Unlocker.cs` (잠금 해제) · `Token.cs` (토큰 넘기기) · `Creds.cs` (토큰 저장) · `Profiles.cs` (그래픽 프로필 · 모드 목록) · `Lang.cs` (언어) · `Program.cs` (창) 를 읽고 직접 빌드. 네트워크 코드 없음 (로그인은 브라우저가 블리자드 사이트와 직접 한다) |
+| 출처 불명 exe | 릴리즈 exe 는 GitHub Actions 가 공개된 소스로 빌드하고 출처 증명을 붙인다 (`gh attestation verify` 로 확인). 직접 빌드하려면 `Unlocker.cs` (잠금 해제) · `Token.cs` (토큰 넘기기) · `Creds.cs` (토큰 저장) · `Profiles.cs` (그래픽 프로필 · 모드 목록) · `Lang.cs` (언어) · `Program.cs` (창) 를 읽고 직접 빌드. 네트워크 코드 없음 (로그인은 브라우저가 블리자드 사이트와 직접 한다) |
 | 관리자 권한 (handle.exe · Process Explorer) | 필요 없다. 같은 사용자가 띄운 D2R 프로세스는 `PROCESS_QUERY_INFORMATION \| PROCESS_DUP_HANDLE` 로 열 수 있다. 관리자가 아닌 셸에서 시험해 통과 |
 | 계정 정보 평문 저장 | 런처는 **비밀번호를 받지 않는다**. 토큰은 **Windows 자격 증명 관리자** 에만 (`D2RMulti:<이메일>`, DPAPI 암호화). 레지스트리에 쓸 때도 DPAPI 로 암호화. 명령줄에는 `-uid osi` 뿐. `%APPDATA%\D2RMulti\settings.txt` 에는 언어 · 별칭 · 이메일 · 지역 · 모드 · 그래픽 프로필 · 게임 경로만 |
 | 계정 제재 | 게임 메모리를 읽거나 쓰지 않고, DLL 주입 · 입력 자동화도 없다. 하는 일은 잠금 이벤트 핸들 하나 (이름 끝이 `Check For Other Instances` — 2026-10 실측 `DiabloII Check For Other Instances`, 예전 판 `DiaBlo_II …`) 를 닫는 것과, Battle.net 런처와 같은 자리에 토큰을 두고 실행하는 것뿐 |
